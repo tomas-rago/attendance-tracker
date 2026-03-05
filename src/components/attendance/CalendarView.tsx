@@ -24,12 +24,6 @@ interface CalendarViewProps {
 
 type DayStatus = 'has-attendance' | 'skipped' | 'no-classes' | 'pending' | 'future';
 
-interface ClassDayStatus {
-  classId: string;
-  className: string;
-  status: 'completed' | 'pending';
-}
-
 export function CalendarView({ selectedDate, onDateSelect, onClose }: CalendarViewProps) {
   const [viewMonth, setViewMonth] = useState(selectedDate);
   const {
@@ -57,23 +51,23 @@ export function CalendarView({ selectedDate, onDateSelect, onClose }: CalendarVi
   }, [viewMonth]);
 
   // Get status for a specific day
-  const getDayStatus = (date: Date): { status: DayStatus; classes: ClassDayStatus[] } => {
+  const getDayStatus = (date: Date): { status: DayStatus } => {
     const dateString = formatDateISO(date);
     const dayRecord = getDayRecord(dateString);
 
     // Future dates
     if (date > today) {
-      return { status: 'future', classes: [] };
+      return { status: 'future' };
     }
 
     // Weekend
     if (!isWeekday(date)) {
-      return { status: 'no-classes', classes: [] };
+      return { status: 'no-classes' };
     }
 
     // Day was explicitly skipped
     if (dayRecord?.status === 'skipped') {
-      return { status: 'skipped', classes: [] };
+      return { status: 'skipped' };
     }
 
     const weekday = getScheduleWeekday(date) as Weekday;
@@ -81,7 +75,7 @@ export function CalendarView({ selectedDate, onDateSelect, onClose }: CalendarVi
 
     // No classes scheduled for this weekday
     if (dayClasses.length === 0) {
-      return { status: 'no-classes', classes: [] };
+      return { status: 'no-classes' };
     }
 
     // Check if at least one class has attendance
@@ -90,9 +84,9 @@ export function CalendarView({ selectedDate, onDateSelect, onClose }: CalendarVi
     );
 
     if (hasAnyAttendance) {
-      return { status: 'has-attendance', classes: [] };
+      return { status: 'has-attendance' };
     } else {
-      return { status: 'pending', classes: [] };
+      return { status: 'pending' };
     }
   };
 
@@ -163,7 +157,7 @@ export function CalendarView({ selectedDate, onDateSelect, onClose }: CalendarVi
       {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-1">
         {calendarDays.map((day, index) => {
-          const { status, classes } = getDayStatus(day);
+          const { status } = getDayStatus(day);
           const isCurrentMonth = isSameMonth(day, viewMonth);
           const isSelected = isSameDay(day, selectedDate);
           const isClickable = day <= today && isCurrentMonth && isWeekday(day);
