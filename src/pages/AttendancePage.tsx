@@ -112,28 +112,6 @@ export function AttendancePage() {
               <p className="mt-1">No hay clases programadas</p>
             </div>
           </div>
-        ) : isDayCompleted ? (
-          // Day already completed
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className={`
-                w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center
-                ${dayRecord?.status === 'skipped' ? 'bg-yellow-100' : 'bg-green-100'}
-              `}>
-                <svg className={`w-10 h-10 ${dayRecord?.status === 'skipped' ? 'text-yellow-600' : 'text-green-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-xl font-medium text-gray-900">
-                {dayRecord?.status === 'skipped' ? 'Día omitido' : 'Día completado'}
-              </p>
-              {dayRecord?.reason && (
-                <p className="mt-2 text-gray-600">
-                  Motivo: <span className="font-medium">{dayRecord.reason}</span>
-                </p>
-              )}
-            </div>
-          </div>
         ) : dayClasses.length === 0 ? (
           // No classes scheduled
           <div className="flex items-center justify-center h-full">
@@ -148,6 +126,31 @@ export function AttendancePage() {
         ) : (
           // Show class cards
           <div className="max-w-4xl mx-auto">
+            {/* Day status banner */}
+            {isDayCompleted && (
+              <div className={`
+                mb-4 p-3 rounded-lg flex items-center gap-3
+                ${dayRecord?.status === 'skipped' ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'}
+              `}>
+                <div className={`
+                  w-8 h-8 rounded-full flex items-center justify-center
+                  ${dayRecord?.status === 'skipped' ? 'bg-yellow-100' : 'bg-green-100'}
+                `}>
+                  <svg className={`w-4 h-4 ${dayRecord?.status === 'skipped' ? 'text-yellow-600' : 'text-green-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {dayRecord?.status === 'skipped' ? 'Día omitido' : 'Día completado'}
+                  </p>
+                  {dayRecord?.reason && (
+                    <p className="text-sm text-gray-600">Motivo: {dayRecord.reason}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4 mb-6">
               {classesWithAttendance.map(({ cls, course, hasAttendance }) => (
                 <ClassCard
@@ -160,15 +163,17 @@ export function AttendancePage() {
               ))}
             </div>
 
-            <div className="flex justify-center">
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => setShowFinishModal(true)}
-              >
-                Finalizar día
-              </Button>
-            </div>
+            {!isDayCompleted && (
+              <div className="flex justify-center">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => setShowFinishModal(true)}
+                >
+                  Finalizar día
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

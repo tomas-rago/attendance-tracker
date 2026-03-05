@@ -140,7 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteCourse = useCallback(async (id: string) => {
     // Also delete associated classes and students
-    await db.transaction('rw', [db.courses, db.classes, db.students], async () => {
+    await db.transaction('rw', [db.courses, db.classes, db.students, db.schedules], async () => {
       const classesToDelete = await db.classes.where('courseId').equals(id).toArray();
       await db.classes.where('courseId').equals(id).delete();
       await db.students.where('courseId').equals(id).delete();

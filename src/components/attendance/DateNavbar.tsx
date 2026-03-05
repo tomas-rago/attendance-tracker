@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatDateISO, formatDateNavbar, getToday } from '../../utils/dates';
+import { CalendarView } from './CalendarView';
 
 interface DateNavbarProps {
   selectedDate: Date;
@@ -9,17 +10,26 @@ interface DateNavbarProps {
 }
 
 export function DateNavbar({ selectedDate, onDateChange, onPrevDay, onNextDay }: DateNavbarProps) {
-  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
   const today = getToday();
   const todayISO = formatDateISO(today);
   const isToday = formatDateISO(selectedDate) === todayISO;
 
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = new Date(e.target.value + 'T00:00:00');
-    if (!isNaN(date.getTime()) && date <= today) {
-      onDateChange(date);
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
     }
-  };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCalendar]);
 
   const handleNextDay = () => {
     if (!isToday) {
@@ -27,42 +37,47 @@ export function DateNavbar({ selectedDate, onDateChange, onPrevDay, onNextDay }:
     }
   };
 
-  const openDatePicker = () => {
-    dateInputRef.current?.showPicker();
+  const toggleCalendar = () => {
+    setShowCalendar(prev => !prev);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    onDateChange(date);
   };
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 px-4 py-3">
       <div className="flex items-center justify-between">
-        {/* Left: Prev button + Date picker */}
+        {/* Left: Prev button + Calendar toggle */}
         <div className="flex items-center gap-2">
           <button
             onClick={onPrevDay}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Día anterior"
+            aria-label="Dia anterior"
           >
             <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
-          <button
-            onClick={openDatePicker}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <input
-            ref={dateInputRef}
-            type="date"
-            value={formatDateISO(selectedDate)}
-            max={todayISO}
-            onChange={handleDateInputChange}
-            className="absolute opacity-0 pointer-events-none"
-            tabIndex={-1}
-          />
+          <div className="relative" ref={calendarRef}>
+            <button
+              onClick={toggleCalendar}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+
+            {showCalendar && (
+              <CalendarView
+                selectedDate={selectedDate}
+                onDateSelect={handleDateSelect}
+                onClose={() => setShowCalendar(false)}
+              />
+            )}
+          </div>
         </div>
 
         {/* Center: Date text + Today badge */}
@@ -86,7 +101,7 @@ export function DateNavbar({ selectedDate, onDateChange, onPrevDay, onNextDay }:
               ? 'text-gray-300 cursor-not-allowed'
               : 'hover:bg-gray-100 text-gray-600'
           }`}
-          aria-label="Día siguiente"
+          aria-label="Dia siguiente"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

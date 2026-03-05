@@ -8,7 +8,7 @@ import { formatCourseName } from '../../types';
 import type { Class } from '../../types';
 
 export function ClassesConfig() {
-  const { classes, courses, addClass, updateClass, deleteClass } = useApp();
+  const { classes, courses, addClass, updateClass, deleteClass, refreshData } = useApp();
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -48,6 +48,7 @@ export function ClassesConfig() {
     if (deleteId) {
       await deleteClass(deleteId);
       setDeleteId(null);
+      refreshData();
     }
   };
 

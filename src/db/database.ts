@@ -30,10 +30,33 @@ export class AttendanceDatabase extends Dexie {
       dayRecords: 'id, date',
       teacherConfig: 'id',
     });
+
+    // Version 2: Add gender field to students (stored but not indexed)
+    this.version(2).stores({
+      courses: 'id, grade, level, division',
+      classes: 'id, courseId, name',
+      students: 'id, courseId, name',
+      schedules: 'id, year',
+      attendanceRecords: 'id, classId, date, [classId+date]',
+      dayRecords: 'id, date',
+      teacherConfig: 'id',
+    }).upgrade(tx => {
+      // Add default gender 'Varon' to existing students
+      return tx.table('students').toCollection().modify(student => {
+        if (!student.gender) {
+          student.gender = 'Varon';
+        }
+      });
+    });
   }
 }
 
 export const db = new AttendanceDatabase();
+
+// Ensure database is opened and handle errors
+db.open().catch(err => {
+  console.error('Failed to open database:', err);
+});
 
 // Export all data as JSON
 export async function exportAllData(): Promise<string> {

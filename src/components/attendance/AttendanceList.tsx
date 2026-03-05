@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Class, Course, Student, AttendanceStatus, StudentAttendance } from '../../types';
 import { formatDateShort } from '../../utils/dates';
 import { StudentRow } from './StudentRow';
@@ -23,10 +23,24 @@ export function AttendanceList({
   onSave,
   onCancel,
 }: AttendanceListProps) {
+  // Sort students: Varon first, then Mujer, alphabetically within each group
+  const sortedStudents = useMemo(() => {
+    return [...students].sort((a, b) => {
+      const genderOrder: Record<string, number> = { 'Varon': 1, 'Mujer': 2 };
+      const genderA = genderOrder[a.gender] || 3;
+      const genderB = genderOrder[b.gender] || 3;
+
+      if (genderA !== genderB) {
+        return genderA - genderB;
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [students]);
+
   // Initialize attendance status - default everyone to present
   const [attendance, setAttendance] = useState<Map<string, AttendanceStatus>>(() => {
     const map = new Map<string, AttendanceStatus>();
-    students.forEach(student => {
+    sortedStudents.forEach(student => {
       const existing = existingRecords?.find(r => r.studentId === student.id);
       map.set(student.id, existing?.status ?? 'Presente');
     });
@@ -36,12 +50,12 @@ export function AttendanceList({
   // Update when students or existing records change
   useEffect(() => {
     const map = new Map<string, AttendanceStatus>();
-    students.forEach(student => {
+    sortedStudents.forEach(student => {
       const existing = existingRecords?.find(r => r.studentId === student.id);
       map.set(student.id, existing?.status ?? 'Presente');
     });
     setAttendance(map);
-  }, [students, existingRecords]);
+  }, [sortedStudents, existingRecords]);
 
   const toggleStatus = (studentId: string) => {
     setAttendance(prev => {
@@ -61,7 +75,7 @@ export function AttendanceList({
   };
 
   const presentCount = Array.from(attendance.values()).filter(s => s === 'Presente').length;
-  const absentCount = students.length - presentCount;
+  const absentCount = sortedStudents.length - presentCount;
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -95,7 +109,7 @@ export function AttendanceList({
       </div>
 
       {/* Student list */}
-      {students.length === 0 ? (
+      {sortedStudents.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-gray-500">
           <p>No hay alumnos registrados en este curso.</p>
         </div>
@@ -110,7 +124,7 @@ export function AttendanceList({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {students.map(student => (
+              {sortedStudents.map(student => (
                 <StudentRow
                   key={student.id}
                   student={student}

@@ -5,6 +5,7 @@ export type Reason = 'PNFS' | 'Feriado' | 'Cambio de actividad';
 export type AttendanceStatus = 'Presente' | 'Ausente';
 export type DayStatus = 'pending' | 'completed' | 'skipped';
 export type Weekday = 0 | 1 | 2 | 3 | 4; // Monday=0 to Friday=4
+export type Gender = 'Varon' | 'Mujer';
 
 // Course (e.g., "7mo grado A")
 export interface Course {
@@ -27,6 +28,7 @@ export interface Student {
   name: string;
   identificationNumber: string;
   courseId: string;
+  gender: Gender;
 }
 
 // Schedule entry (a class at a specific day and time)
@@ -101,6 +103,10 @@ export const WEEKDAYS: { value: Weekday; label: string }[] = [
   { value: 2, label: 'Miércoles' },
   { value: 3, label: 'Jueves' },
   { value: 4, label: 'Viernes' },
+];
+export const GENDERS: { value: Gender; label: string }[] = [
+  { value: 'Varon', label: 'Varon' },
+  { value: 'Mujer', label: 'Mujer' },
 ];
 
 // Helper function to format course name

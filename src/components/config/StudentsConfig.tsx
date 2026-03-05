@@ -4,8 +4,8 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { ConfirmModal } from '../ui/Modal';
-import { formatCourseName } from '../../types';
-import type { Student } from '../../types';
+import { formatCourseName, GENDERS } from '../../types';
+import type { Student, Gender } from '../../types';
 
 export function StudentsConfig() {
   const { students, courses, addStudent, updateStudent, deleteStudent, getCourseById } = useApp();
@@ -19,24 +19,26 @@ export function StudentsConfig() {
   const [name, setName] = useState('');
   const [identificationNumber, setIdentificationNumber] = useState('');
   const [courseId, setCourseId] = useState('');
+  const [gender, setGender] = useState<Gender>('Varon');
 
   const resetForm = () => {
     setName('');
     setIdentificationNumber('');
     setCourseId('');
+    setGender('Varon');
     setIsAdding(false);
     setEditingId(null);
   };
 
   const handleAdd = async () => {
     if (!name.trim() || !courseId) return;
-    await addStudent({ name: name.trim(), identificationNumber: identificationNumber.trim(), courseId });
+    await addStudent({ name: name.trim(), identificationNumber: identificationNumber.trim(), courseId, gender });
     resetForm();
   };
 
   const handleUpdate = async () => {
     if (editingId && name.trim() && courseId) {
-      await updateStudent(editingId, { name: name.trim(), identificationNumber: identificationNumber.trim(), courseId });
+      await updateStudent(editingId, { name: name.trim(), identificationNumber: identificationNumber.trim(), courseId, gender });
       resetForm();
     }
   };
@@ -46,6 +48,7 @@ export function StudentsConfig() {
     setName(student.name);
     setIdentificationNumber(student.identificationNumber);
     setCourseId(student.courseId);
+    setGender(student.gender || 'Varon');
   };
 
   const handleDelete = async () => {
@@ -94,7 +97,7 @@ export function StudentsConfig() {
       {/* Add/Edit form */}
       {(isAdding || editingId) && (
         <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <Input
               label="Nombre completo"
               value={name}
@@ -106,6 +109,12 @@ export function StudentsConfig() {
               value={identificationNumber}
               onChange={(e) => setIdentificationNumber(e.target.value)}
               placeholder="Ej: 12345678"
+            />
+            <Select
+              label="Genero"
+              value={gender}
+              onChange={(e) => setGender(e.target.value as Gender)}
+              options={GENDERS.map(g => ({ value: g.value, label: g.label }))}
             />
             <Select
               label="Curso"
@@ -140,6 +149,7 @@ export function StudentsConfig() {
               <tr>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Nombre</th>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">DNI</th>
+                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Genero</th>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Curso</th>
                 <th className="px-4 py-2 text-right text-sm font-semibold text-gray-700">Acciones</th>
               </tr>
@@ -151,6 +161,7 @@ export function StudentsConfig() {
                   <tr key={student.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900">{student.name}</td>
                     <td className="px-4 py-3 text-gray-600">{student.identificationNumber || '-'}</td>
+                    <td className="px-4 py-3 text-gray-600">{student.gender || '-'}</td>
                     <td className="px-4 py-3 text-gray-600">{course ? formatCourseName(course) : '-'}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
